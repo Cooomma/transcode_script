@@ -7,17 +7,17 @@ import time
 
 def transcode(segment):
     name = segment.split('.m2ts')[0]
-    cmd = 'ffmpeg -i {segment} -c:v libx264 -tune animation -profile:v high -level 4.2 -b:v 3000k -c:a aac -b:a 320k -threads 8 output/{output}.mp4'.format(
-        segment=segment, output=name)
+    cmd = 'ffmpeg -i {segment} -c:v libx264 -tune animation -profile:v high -level 4.2 -b:v 3000k -c:a copy -threads 6 output/{output}.mp4'.format(
+        segment='tmp/{}'.format(segment), output=name)
     os.system(cmd)
-    open('output/{}.SUCESS'.fomrat(name), 'w').close()
+    open('output/{}.SUCESS'.format(name), 'w').close()
 
 
 def main(source):
-    cmd = 'ffmpeg -i {source} -c copy -f segment -segment_time 600 tmp/main_%02d.m2ts'.format(source=source)
+    cmd = 'ffmpeg -i {source} -c:a aac -b:a 320k -map 0 -f segment -segment_time 600 tmp/main_%02d.m2ts'.format(source=source)
     os.system(cmd)
-    segments = ['tmp/{}'.format(x) for x in os.listdir('tmp/')]
-    pool = Pool(processes=5)
+    segments = [x for x in os.listdir('tmp/')]
+    pool = Pool(processes=14)
     pool.map(transcode, segments)
 
     with open('output/ts.list', 'w') as writer:
